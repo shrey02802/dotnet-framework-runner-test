@@ -32,7 +32,7 @@ jobs:
         shell: powershell
         run: |
           Set-ExecutionPolicy Bypass -Scope Process -Force
-          & "C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin" SampleDotNetFrameworkApp.slnx /t:Rebuild /p:RunCodeAnalysis=true
+          msbuild SampleDotNetFrameworkApp.slnx /t:Rebuild /p:RunCodeAnalysis=true
 
       # ------------------------
       # 4️⃣ Setup OWASP Dependency-Check (cached)
