@@ -1,0 +1,7 @@
+D:\SampleDotNetFrameworkApp\bin\Debug\SampleDotNetFrameworkApp.exe.config
+D:\SampleDotNetFrameworkApp\bin\Debug\SampleDotNetFrameworkApp.exe
+D:\SampleDotNetFrameworkApp\bin\Debug\SampleDotNetFrameworkApp.pdb
+D:\SampleDotNetFrameworkApp\obj\Debug\SampleDotNetFrameworkApp.csproj.AssemblyReference.cache
+D:\SampleDotNetFrameworkApp\obj\Debug\SampleDotNetFrameworkApp.csproj.CoreCompileInputs.cache
+D:\SampleDotNetFrameworkApp\obj\Debug\SampleDotNetFrameworkApp.exe
+D:\SampleDotNetFrameworkApp\obj\Debug\SampleDotNetFrameworkApp.pdb
