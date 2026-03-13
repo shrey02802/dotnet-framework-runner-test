@@ -26,9 +26,13 @@ jobs:
       run: nuget restore SampleDotNetFrameworkApp.slnx
 
     # 4️⃣ Build using MSBuild
-    - name: Build solution
-      run: msbuild SampleDotNetFrameworkApp.slnx /t:Rebuild
-
+    - name: Build .NET Framework Project
+      shell: powershell
+      run: |
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        & "C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe" `
+          "SampleDotNetFrameworkApp.slnx" /t:Rebuild
+      
     # 5️⃣ Run OWASP Dependency Check (auto download)
     - name: Run Dependency Check
       uses: dependency-check/Dependency-Check_Action@main
