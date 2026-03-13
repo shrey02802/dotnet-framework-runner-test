@@ -37,8 +37,9 @@ jobs:
       - name: Download Trivy Scanner
         shell: powershell
         run: |
-          $url = "https://github.com/aquasecurity/trivy/releases/download/v0.50.1/trivy_0.50.1_windows-64bit.zip"
-          Invoke-WebRequest -Uri $url -OutFile trivy.zip
+          $release = Invoke-RestMethod https://api.github.com/repos/aquasecurity/trivy/releases/latest
+          $asset = $release.assets | Where-Object { $_.name -like "*Windows-64bit.zip" }
+          Invoke-WebRequest $asset.browser_download_url -OutFile trivy.zip
           Expand-Archive trivy.zip -DestinationPath "$env:RUNNER_TEMP\trivy" -Force
           Remove-Item trivy.zip
 
@@ -47,5 +48,5 @@ jobs:
       - name: Run Trivy Scan
         shell: powershell
         run: |
-          $trivy = "$env:RUNNER_TEMP\trivy\trivy.exe"
-          & $trivy fs .
+          $trivy = Get-ChildItem "$env:RUNNER_TEMP\trivy" -Recurse -Filter trivy.exe | Select-Object -First 1
+          & $trivy.FullName fs .
