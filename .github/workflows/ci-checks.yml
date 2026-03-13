@@ -1,49 +1,52 @@
-name: .NET Build and Security Scan
+name: DotNet Framework CI
 
 on:
-  push:
+  pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  build:
+
+  build-and-scan:
+
     runs-on: self-hosted
 
     steps:
 
-    # 1️⃣ Checkout code
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      # 1️⃣ Checkout repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    # 2️⃣ Setup Java automatically
-    - name: Setup Java
-      uses: actions/setup-java@v4
-      with:
-        distribution: temurin
-        java-version: 17
 
-    # 3️⃣ Restore NuGet packages
-    - name: Restore NuGet
-      run: nuget restore SampleDotNetFrameworkApp.slnx
+      # 2️⃣ Restore NuGet packages
+      - name: Restore NuGet Packages
+        run: nuget restore SampleDotNetFrameworkApp.slnx
 
-    # 4️⃣ Build using MSBuild
-    - name: Build .NET Framework Project
-      shell: powershell
-      run: |
-        Set-ExecutionPolicy Bypass -Scope Process -Force
-        & "C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe" `
-          "SampleDotNetFrameworkApp.slnx" /t:Rebuild
-      
-    # 5️⃣ Run OWASP Dependency Check (auto download)
-    - name: Run Dependency Check
-      uses: dependency-check/Dependency-Check_Action@main
-      with:
-        project: "SampleDotNetFrameworkApp"
-        path: "."
-        format: "HTML"
 
-    # 6️⃣ Upload report
-    - name: Upload report
-      uses: actions/upload-artifact@v4
-      with:
-        name: dependency-check-report
-        path: reports
+      # 3️⃣ Build Solution using MSBuild
+      - name: Build .NET Framework Solution
+        shell: powershell
+        run: |
+          & "C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe" `
+          "SampleDotNetFrameworkApp.slnx" `
+          /t:Rebuild `
+          /p:Configuration=Release
+
+
+      # 4️⃣ Download Trivy
+      - name: Download Trivy Scanner
+        shell: powershell
+        run: |
+          $release = Invoke-RestMethod https://api.github.com/repos/aquasecurity/trivy/releases/latest
+          $asset = $release.assets | Where-Object { $_.name -like "*Windows-64bit.zip" }
+          Invoke-WebRequest $asset.browser_download_url -OutFile trivy.zip
+          Expand-Archive trivy.zip -DestinationPath "$env:RUNNER_TEMP\trivy" -Force
+          Remove-Item trivy.zip
+
+
+      # 5️⃣ Run Trivy Security Scan
+      - name: Run Trivy Scan
+        shell: powershell
+        run: |
+          $trivy = Get-ChildItem "$env:RUNNER_TEMP\trivy" -Recurse -Filter trivy.exe | Select-Object -First 1
+          & $trivy.FullName fs .
