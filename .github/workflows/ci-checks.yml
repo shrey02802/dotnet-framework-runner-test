@@ -15,8 +15,9 @@ jobs:
       # ------------------------
       # Security Scan with OWASP Dependency-Check
       # ------------------------
-      - name: Install OWASP Dependency-Check
-        run: choco install dependency-check -y
+      - name: Install OWASP Dependency-Check (if missing)
+        run: |
+          choco list --local-only dependency-check | Select-String "dependency-check" || choco install dependency-check -y
 
       - name: Run Dependency-Check
         run: |
@@ -35,7 +36,9 @@ jobs:
       # Static Code Analysis
       # ------------------------
       - name: Restore NuGet Packages
-        run: nuget restore SampleDotNetFrameworkApp.slnx
+        run: |
+          choco list --local-only nuget.commandline | Select-String "nuget.commandline" || choco install nuget.commandline -y
+          nuget restore SampleDotNetFrameworkApp.slnx
 
       - name: Build with Analyzers
         run: msbuild SampleDotNetFrameworkApp.slnx /t:Rebuild /p:RunCodeAnalysis=true
