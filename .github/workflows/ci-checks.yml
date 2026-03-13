@@ -10,20 +10,34 @@ jobs:
     runs-on: [self-hosted, windows]
 
     steps:
+      # ------------------------
+      # Checkout repository
+      # ------------------------
       - name: Checkout code
         uses: actions/checkout@v3
 
       # ------------------------
-      # Security Scan with OWASP Dependency-Check
+      # Install tools via Chocolatey (CMD shell for safety)
       # ------------------------
-      - name: Install OWASP Dependency-Check
-        run: choco install dependency-check -y
-
-      - name: Run Dependency-Check
+      - name: Install OWASP Dependency-Check if missing
+        shell: cmd
         run: |
-          dependency-check --project "SampleDotNetFrameworkApp" \
-                           --scan . \
-                           --format HTML \
+          choco list --local-only dependency-check >nul 2>&1 || choco install dependency-check -y
+
+      - name: Install NuGet CLI if missing
+        shell: cmd
+        run: |
+          choco list --local-only nuget.commandline >nul 2>&1 || choco install nuget.commandline -y
+
+      # ------------------------
+      # Run OWASP Dependency-Check
+      # ------------------------
+      - name: Run Dependency-Check
+        shell: powershell
+        run: |
+          dependency-check --project "SampleDotNetFrameworkApp" `
+                           --scan . `
+                           --format HTML `
                            --out dependency-check-report.html
 
       - name: Upload Dependency-Check Report
@@ -36,9 +50,11 @@ jobs:
       # Static Code Analysis
       # ------------------------
       - name: Restore NuGet Packages
+        shell: powershell
         run: nuget restore SampleDotNetFrameworkApp.slnx
 
       - name: Build with Analyzers
+        shell: powershell
         run: msbuild SampleDotNetFrameworkApp.slnx /t:Rebuild /p:RunCodeAnalysis=true
 
       - name: Upload Build Artifacts
