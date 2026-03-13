@@ -34,18 +34,8 @@ jobs:
 
 
     # 4️⃣ Install Trivy (lightweight security scanner)
-    - name: Install Trivy
-      shell: powershell
-      run: |
-        $trivyPath = "$env:RUNNER_TEMP\trivy.exe"
-        Invoke-WebRequest -Uri https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.50.0_windows-64bit.zip -OutFile trivy.zip
-        Expand-Archive trivy.zip -DestinationPath $env:RUNNER_TEMP -Force
-        Remove-Item trivy.zip
-
-
-    # 5️⃣ Run Trivy scan
-    - name: Run Trivy Security Scan
-      shell: powershell
-      run: |
-        $trivy = Get-ChildItem $env:RUNNER_TEMP -Recurse -Filter trivy.exe | Select-Object -First 1
-        & $trivy.FullName fs .
+   - name: Run Trivy Scan
+      uses: aquasecurity/trivy-action@0.24.0
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
