@@ -4,6 +4,7 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+
 jobs:
   code-checks:
     runs-on: [self-hosted, windows]
@@ -15,10 +16,8 @@ jobs:
       # ------------------------
       # Security Scan with OWASP Dependency-Check
       # ------------------------
-      - name: Install OWASP Dependency-Check (if missing)
-        shell: cmd
-        run: |
-          choco list --local-only dependency-check | Select-String "dependency-check" || choco install dependency-check -y
+      - name: Install OWASP Dependency-Check
+        run: choco install dependency-check -y
 
       - name: Run Dependency-Check
         run: |
@@ -37,10 +36,7 @@ jobs:
       # Static Code Analysis
       # ------------------------
       - name: Restore NuGet Packages
-        shell: cmd
-        run: |
-          choco list --local-only nuget.commandline | Select-String "nuget.commandline" || choco install nuget.commandline -y
-          nuget restore SampleDotNetFrameworkApp.slnx
+        run: nuget restore SampleDotNetFrameworkApp.slnx
 
       - name: Build with Analyzers
         run: msbuild SampleDotNetFrameworkApp.slnx /t:Rebuild /p:RunCodeAnalysis=true
