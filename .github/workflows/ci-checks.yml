@@ -11,35 +11,67 @@ jobs:
 
     steps:
       # ------------------------
-      # Checkout repository
+      # 1️⃣ Checkout code
       # ------------------------
       - name: Checkout code
         uses: actions/checkout@v3
 
       # ------------------------
-      # Install tools via Chocolatey (CMD shell for safety)
+      # 2️⃣ Restore NuGet Packages
       # ------------------------
-      - name: Install OWASP Dependency-Check if missing
-        shell: cmd
+      - name: Restore NuGet Packages
+        shell: powershell
         run: |
-          choco list --local-only dependency-check >nul 2>&1 || choco install dependency-check -y
-
-      - name: Install NuGet CLI if missing
-        shell: cmd
-        run: |
-          choco list --local-only nuget.commandline >nul 2>&1 || choco install nuget.commandline -y
+          Set-ExecutionPolicy Bypass -Scope Process -Force
+          nuget restore SampleDotNetFrameworkApp.slnx
 
       # ------------------------
-      # Run OWASP Dependency-Check
+      # 3️⃣ Build with Analyzers (StyleCop / FxCop)
+      # ------------------------
+      - name: Build with Analyzers
+        shell: powershell
+        run: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force
+          msbuild SampleDotNetFrameworkApp.slnx /t:Rebuild /p:RunCodeAnalysis=true
+
+      # ------------------------
+      # 4️⃣ Setup OWASP Dependency-Check (cached)
+      # ------------------------
+      - name: Cache Dependency-Check
+        uses: actions/cache@v3
+        id: dc-cache
+        with:
+          path: C:\dependency-check
+          key: dependency-check-v8.0.2
+
+      - name: Download Dependency-Check if missing
+        if: steps.dc-cache.outputs.cache-hit != 'true'
+        shell: powershell
+        run: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force
+          $dcVersion = "8.0.2"
+          $dcUrl = "https://github.com/jeremylong/DependencyCheck/releases/download/v$dcVersion/dependency-check-$dcVersion-release.zip"
+          $dest = "C:\dependency-check.zip"
+          Invoke-WebRequest -Uri $dcUrl -OutFile $dest
+          Expand-Archive -Path $dest -DestinationPath "C:\dependency-check" -Force
+          Remove-Item $dest
+          $env:PATH += ";C:\dependency-check"
+
+      # ------------------------
+      # 5️⃣ Run Dependency-Check
       # ------------------------
       - name: Run Dependency-Check
         shell: powershell
         run: |
-          dependency-check --project "SampleDotNetFrameworkApp" `
-                           --scan . `
-                           --format HTML `
-                           --out dependency-check-report.html
+          Set-ExecutionPolicy Bypass -Scope Process -Force
+          C:\dependency-check\dependency-check.bat --project "SampleDotNetFrameworkApp" `
+                                                    --scan "$GITHUB_WORKSPACE\bin" `
+                                                    --format HTML `
+                                                    --out "$GITHUB_WORKSPACE\dependency-check-report.html"
 
+      # ------------------------
+      # 6️⃣ Upload Dependency-Check Report
+      # ------------------------
       - name: Upload Dependency-Check Report
         uses: actions/upload-artifact@v4
         with:
@@ -47,18 +79,10 @@ jobs:
           path: dependency-check-report.html
 
       # ------------------------
-      # Static Code Analysis
+      # 7️⃣ Upload Build Artifacts
       # ------------------------
-      - name: Restore NuGet Packages
-        shell: powershell
-        run: nuget restore SampleDotNetFrameworkApp.slnx
-
-      - name: Build with Analyzers
-        shell: powershell
-        run: msbuild SampleDotNetFrameworkApp.slnx /t:Rebuild /p:RunCodeAnalysis=true
-
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
-          path: SampleDotnetFrameworkApp/bin/
+          path: SampleDotNetFrameworkApp\bin\
