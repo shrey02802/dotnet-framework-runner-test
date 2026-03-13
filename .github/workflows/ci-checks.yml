@@ -1,11 +1,14 @@
-name: .NET Build and Security Scan
+name: DotNet Framework CI
 
 on:
-  push:
+  pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  build:
+
+  build-and-scan:
+
     runs-on: self-hosted
 
     steps:
@@ -14,36 +17,35 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # 2️⃣ Setup Java automatically
-    - name: Setup Java
-      uses: actions/setup-java@v4
-      with:
-        distribution: temurin
-        java-version: 17
 
-    # 3️⃣ Restore NuGet packages
-    - name: Restore NuGet
+    # 2️⃣ Restore NuGet packages
+    - name: Restore NuGet packages
       run: nuget restore SampleDotNetFrameworkApp.slnx
 
-    # 4️⃣ Build using MSBuild
-    - name: Build .NET Framework Project
+
+    # 3️⃣ Build solution using MSBuild
+    - name: Build .NET Framework Solution
       shell: powershell
       run: |
-        Set-ExecutionPolicy Bypass -Scope Process -Force
         & "C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe" `
-          "SampleDotNetFrameworkApp.slnx" /t:Rebuild
-      
-    # 5️⃣ Run OWASP Dependency Check (auto download)
-    - name: Run Dependency Check
-      uses: dependency-check/Dependency-Check_Action@main
-      with:
-        project: "SampleDotNetFrameworkApp"
-        path: "."
-        format: "HTML"
+        "SampleDotNetFrameworkApp.slnx" `
+        /t:Rebuild `
+        /p:Configuration=Release
 
-    # 6️⃣ Upload report
-    - name: Upload report
-      uses: actions/upload-artifact@v4
-      with:
-        name: dependency-check-report
-        path: reports
+
+    # 4️⃣ Install Trivy (lightweight security scanner)
+    - name: Install Trivy
+      shell: powershell
+      run: |
+        $trivyPath = "$env:RUNNER_TEMP\trivy.exe"
+        Invoke-WebRequest -Uri https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.50.0_windows-64bit.zip -OutFile trivy.zip
+        Expand-Archive trivy.zip -DestinationPath $env:RUNNER_TEMP -Force
+        Remove-Item trivy.zip
+
+
+    # 5️⃣ Run Trivy scan
+    - name: Run Trivy Security Scan
+      shell: powershell
+      run: |
+        $trivy = Get-ChildItem $env:RUNNER_TEMP -Recurse -Filter trivy.exe | Select-Object -First 1
+        & $trivy.FullName fs .
