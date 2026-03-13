@@ -16,7 +16,7 @@ jobs:
       # Security Scan with OWASP Dependency-Check
       # ------------------------
       - name: Install OWASP Dependency-Check (if missing)
-        shell: pwsh
+        shell: cmd
         run: |
           choco list --local-only dependency-check | Select-String "dependency-check" || choco install dependency-check -y
 
@@ -37,7 +37,7 @@ jobs:
       # Static Code Analysis
       # ------------------------
       - name: Restore NuGet Packages
-        shell: pwsh
+        shell: cmd
         run: |
           choco list --local-only nuget.commandline | Select-String "nuget.commandline" || choco install nuget.commandline -y
           nuget restore SampleDotNetFrameworkApp.slnx
