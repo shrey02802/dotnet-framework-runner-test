@@ -51,7 +51,7 @@ jobs:
           Set-ExecutionPolicy Bypass -Scope Process -Force
           $dcVersion = "8.0.2"
           $dcUrl = "https://github.com/jeremylong/DependencyCheck/releases/download/v$dcVersion/dependency-check-$dcVersion-release.zip"
-          $dest = "C:\dependency-check.zip"
+          $dest = "D:\dependency-check.zip"
           Invoke-WebRequest -Uri $dcUrl -OutFile $dest
           Expand-Archive -Path $dest -DestinationPath "C:\dependency-check" -Force
           Remove-Item $dest
@@ -64,7 +64,7 @@ jobs:
         shell: powershell
         run: |
           Set-ExecutionPolicy Bypass -Scope Process -Force
-          C:\dependency-check\dependency-check.bat --project "SampleDotNetFrameworkApp" `
+          D:\dependency-check\dependency-check.bat --project "SampleDotNetFrameworkApp" `
                                                     --scan "$GITHUB_WORKSPACE\bin" `
                                                     --format HTML `
                                                     --out "$GITHUB_WORKSPACE\dependency-check-report.html"
