@@ -35,7 +35,7 @@ jobs:
       # Static Code Analysis
       # ------------------------
       - name: Restore NuGet Packages
-        run: nuget restore SampleDotnetFrameworkApp.slnx
+        run: nuget restore SampleDotNetFrameworkApp.slnx
 
       - name: Build with Analyzers
         run: msbuild SampleDotNetFrameworkApp.slnx /t:Rebuild /p:RunCodeAnalysis=true
