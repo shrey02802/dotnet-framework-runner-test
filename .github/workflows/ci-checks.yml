@@ -20,7 +20,7 @@ jobs:
 
       - name: Run Dependency-Check
         run: |
-          dependency-check --project "SampleDotnetFrameworkApp" \
+          dependency-check --project "SampleDotNetFrameworkApp" \
                            --scan . \
                            --format HTML \
                            --out dependency-check-report.html
@@ -38,10 +38,10 @@ jobs:
         run: nuget restore SampleDotnetFrameworkApp.slnx
 
       - name: Build with Analyzers
-        run: msbuild SampleDotnetFrameworkApp.slnx /t:Rebuild /p:RunCodeAnalysis=true
+        run: msbuild SampleDotNetFrameworkApp.slnx /t:Rebuild /p:RunCodeAnalysis=true
 
       - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: SampleDotnetFrameworkApp/bin/
