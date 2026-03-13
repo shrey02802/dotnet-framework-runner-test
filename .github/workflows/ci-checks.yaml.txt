@@ -1,0 +1,47 @@
+name: CI Checks
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+jobs:
+  code-checks:
+    runs-on: [self-hosted, windows]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # ------------------------
+      # Security Scan with OWASP Dependency-Check
+      # ------------------------
+      - name: Install OWASP Dependency-Check
+        run: choco install dependency-check -y
+
+      - name: Run Dependency-Check
+        run: |
+          dependency-check --project "SampleDotnetFrameworkApp" \
+                           --scan . \
+                           --format HTML \
+                           --out dependency-check-report.html
+
+      - name: Upload Dependency-Check Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-check-report
+          path: dependency-check-report.html
+
+      # ------------------------
+      # Static Code Analysis
+      # ------------------------
+      - name: Restore NuGet Packages
+        run: nuget restore SampleDotnetFrameworkApp.slnx
+
+      - name: Build with Analyzers
+        run: msbuild SampleDotnetFrameworkApp.slnx /t:Rebuild /p:RunCodeAnalysis=true
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: SampleDotnetFrameworkApp/bin/
