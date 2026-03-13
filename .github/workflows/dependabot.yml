@@ -1,0 +1,16 @@
+name: Security Scan
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # every 5 minutes
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run scan
+        run: echo "Running dependency scan"
