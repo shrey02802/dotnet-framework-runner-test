@@ -26,7 +26,7 @@ jobs:
                            --out dependency-check-report.html
 
       - name: Upload Dependency-Check Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dependency-check-report
           path: dependency-check-report.html
