@@ -1,0 +1,40 @@
+name: Build Pipeline (.NET Framework 4.7)
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: [self-hosted, windows]
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Setup MSBuild environment
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1
+        with:
+          vs-version: 'latest'
+
+      # Step 3: Restore NuGet packages
+      - name: Restore NuGet Packages
+        run: nuget restore SampleApp/SampleApp.sln
+
+      # Step 4: Build the solution using MSBuild
+      - name: Build Solution
+        run: msbuild SampleDotNetFrameworkApp/SampleDotNetFrameworkApp.sln /p:Configuration=Release
+
+      # Step 5: Publish build artifact
+      - name: Publish Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: SampleDotNetFrameworkApp-Build
+          path: SampleDotNetFrameworkApp/bin/Release/
+
+      # Step 6: Optional deploy simulation
+      - name: Deploy Simulation
+        run: |
+          echo "Build complete. Artifact ready for deployment."
