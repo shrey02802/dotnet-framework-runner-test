@@ -21,11 +21,11 @@ jobs:
 
       # Step 3: Restore NuGet packages
       - name: Restore NuGet Packages
-        run: nuget restore SampleDotNetFrameworkApp/SampleDotNetFrameworkApp.sln
+        run: nuget restore SampleDotNetFrameworkApp.sln
 
       # Step 4: Build the solution using MSBuild
       - name: Build Solution
-        run: msbuild SampleDotNetFrameworkApp/SampleDotNetFrameworkApp.sln /p:Configuration=Release
+        run: msbuild SampleDotNetFrameworkApp.sln /p:Configuration=Release
 
       # Step 5: Publish build artifact
       - name: Publish Artifact
