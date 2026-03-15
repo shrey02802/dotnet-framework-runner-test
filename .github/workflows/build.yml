@@ -32,7 +32,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: SampleDotNetFrameworkApp-Build
-          path: SampleDotNetFrameworkApp/bin/Release/
+          path: bin/Release/
       
       # Step 6: chcking artifacts upaoded or not
       - name: Check build output
