@@ -21,7 +21,7 @@ jobs:
 
       # Step 3: Restore NuGet packages
       - name: Restore NuGet Packages
-        run: nuget restore SampleDotNetFrameworkApp/SampleDotNetFrameworkApp.slnx
+        run: nuget restore SampleDotNetFrameworkApp/SampleDotNetFrameworkApp.sln
 
       # Step 4: Build the solution using MSBuild
       - name: Build Solution
