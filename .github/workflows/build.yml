@@ -33,8 +33,12 @@ jobs:
         with:
           name: SampleDotNetFrameworkApp-Build
           path: SampleDotNetFrameworkApp/bin/Release/
-
-      # Step 6: Optional deploy simulation
+      
+      # Step 6: chcking artifacts upaoded or not
+      - name: Check build output
+        run: dir bin\Release
+     
+      # Step 7: Optional deploy simulation
       - name: Deploy Simulation
         run: |
           echo "Build complete. Artifact ready for deployment."
